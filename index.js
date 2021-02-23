@@ -18,7 +18,8 @@ export default class Rotation extends Component {
       PropTypes.string,
       PropTypes.number
     ]),
-    pauseOnHover: PropTypes.bool
+    pauseOnHover: PropTypes.bool,
+    sizeOfOneFullRotation: PropTypes.number
   }
 
   static defaultProps = {
@@ -134,11 +135,20 @@ export default class Rotation extends Component {
 
     const {vertical, children, reverse} = this.props
     const {offsetWidth, offsetHeight} = event.currentTarget
+    const fullRotationWidth = Number.isInteger(this.props.sizeOfOneFullRotation)
+      ? this.props.sizeOfOneFullRotation
+      : offsetWidth
+    const fullRotationHeight = Number.isInteger(this.props.sizeOfOneFullRotation)
+      ? this.props.sizeOfOneFullRotation
+      : offsetHeight
     const pointer = this.calculatePointerPosition(event)
-    const max = vertical ? offsetHeight : offsetWidth
+    const max = vertical ? fullRotationHeight : fullRotationWidth
     const offset = pointer - this.pointerPosition
     const delta = Math.floor(offset / max * children.length)
-    this.setCurrentFrame(reverse ? this.startFrame - delta : this.startFrame + delta)
+    const adjustedDelta = Math.abs(delta) > children.length
+      ? (Math.sign(delta) < 0 ? delta + 60 : delta - 60)
+      : delta
+    this.setCurrentFrame(reverse ? this.startFrame - adjustedDelta : this.startFrame + adjustedDelta)
   }
 
   touchEnd = event => {
